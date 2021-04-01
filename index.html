@@ -2,3 +2,78 @@
 <h1> Esta es mi primera página con GitHub Pages </h1>
 <p>¡Gracias GitHub!</p>
 </html>
+
+
+# incluye  < stdio.h >
+# incluye  < stdlib.h >
+# incluir  < unistd.h >
+# incluye  < errno.h >
+# incluir  < sys / wait.h >
+# incluye  < sys / types.h >
+
+ calculadora vacía ( char * f) {
+    if ( execlp (f, f, ( char *) NULL ) < 0 ) {
+        perror ( " Exec " );
+        printf ( " Valor de Errno: % i \ n " , errno);
+        salir (EXIT_FAILURE);
+    }
+}
+ archivos vacíos ( char * f []) {
+    si ( execvp (f [ 0 ], f) < 0 ) {
+        perror ( " Exec " );
+        printf ( " Valor de Errno: % i \ n " , errno);
+        salir (EXIT_FAILURE);
+    }
+}
+
+
+int  main ( int argc, char ** argv) {
+    estado int , n;
+    pid_t pid, pidd;
+    printf ( " Introduce una cantidad de archivos: \ n " );
+    scanf ( " % i " , & n);
+    si (argc! = 3 + n) {
+        printf ( " Error en los argumentos \ n " );
+        salir (EXIT_FAILURE);
+    }
+
+    // F0: Este es el primer tenedor
+    pid = tenedor ();
+
+    si (pid == 0 ) {
+        // F1: Proceso hijo sigue por aquí
+        printf ( " Soy el 1º hijo, con PID % i y voy a abrir la calculadora \ n " , getpid ());
+        calculadora (argv [ 1 ]);
+    } más {
+        // F0: Aqui sigue ejecutando el padre luego de lanzar el fork F1
+        pid = tenedor ();
+        si (pid == 0 ) {
+            // F2: Segundo tenedor
+            printf ( " Soy el 2º hijo, con PID % i y voy a abrir n archivos \ n " , getpid ());
+            archivos (argv + 2 );
+        }
+    }
+
+    // Todos los procesos siguen por aqui una vez lanzadas las aplicaciones.
+    if (pid> 0 ) { // Los hijos no entran acá.
+        // F0: Ahora queda esperar a que TODOS los hijos terminen.
+        int cta = 2 ;
+        while (cta) { // Dos hijos a esperar.
+            pidd = esperar (& estado); // Aqui quedamos bloqueados hasta que
+            cta--;                // alguien termine.
+            // Ojo: No hay que hacer `exit` aqui adentro, pues
+            // terminariamos junto con el primer hijo terminado.
+            if ( WIFEXITED (estado)) {
+                printf ( " Hijo % i ha sido esperado y su estado es % i \ n " , pidd, WEXITSTATUS (estado));
+            } más  si ( WIFSIGNALED (estado)) {
+                printf ( " Hijo % i ha muerto y su estado es % i \ n " , pidd, WTERMSIG (estado));
+            } else  if ( WIFSTOPPED (estado)) {
+                printf ( " Hijo % i ha sufrido un error y su estado es % i \ n " , pidd, WSTOPSIG (estado));
+            }
+        }
+    } else  if (pid < 0 ) { // Error de proceso
+        printf ( " Error al crear el proceso. Errno: % i \ n " , errno);
+    }
+
+    salir (EXIT_SUCCESS);
+}
